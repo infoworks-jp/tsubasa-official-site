@@ -1,49 +1,13 @@
-<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#050505" />
-  <title>味一番つばさ｜究極の味噌</title>
-  <meta name="description" content="すすきの・新ラーメン横丁 味一番つばさ。究極の味噌ラーメン。" />
-  <style>
-    :root{--bg:#050505;--red:#9c120f;--muted:#cfc7bc}
-    *{box-sizing:border-box}
-    html,body{margin:0;min-height:100%;background:var(--bg);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}
-    body{overflow-x:hidden}
-    .hero{position:relative;min-height:100svh;isolation:isolate;background:#050505;overflow:hidden}
-    .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 60% 55%,rgba(255,255,255,.06),transparent 28%),linear-gradient(180deg,#050505 0%,#070707 58%,#120806 100%);z-index:-4}
-    .hero::after{content:"";position:absolute;left:-8%;right:-8%;bottom:-8%;height:34%;background:radial-gradient(ellipse at 50% 0%,rgba(160,18,15,.72),rgba(93,11,9,.45) 35%,rgba(0,0,0,0) 72%);filter:blur(10px);z-index:-2}
-    .photo{position:absolute;left:50%;bottom:-2.5vw;width:min(1050px,104vw);transform:translateX(-50%);z-index:-1;filter:saturate(.92) contrast(1.04) brightness(.84);user-select:none;pointer-events:none}
-    .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,.06) 42%,rgba(0,0,0,.12) 67%,rgba(0,0,0,.72) 100%);z-index:0;pointer-events:none}
-    .smoke{position:absolute;inset:-10% 0 24% 0;z-index:-1;opacity:.68;filter:blur(10px);background:radial-gradient(ellipse at 48% 48%,rgba(255,255,255,.18),rgba(255,255,255,0) 16%),radial-gradient(ellipse at 55% 34%,rgba(255,255,255,.10),rgba(255,255,255,0) 13%),radial-gradient(ellipse at 46% 23%,rgba(255,255,255,.08),rgba(255,255,255,0) 10%);animation:drift 8s ease-in-out infinite alternate;pointer-events:none}
-    @keyframes drift{from{transform:translate3d(-1%,1%,0) scale(1)}to{transform:translate3d(2%,-2%,0) scale(1.05)}}
-    .topbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:max(28px,env(safe-area-inset-top)) 30px 0;z-index:3}
-    .brand{writing-mode:vertical-rl;font-family:serif;font-weight:700;font-size:22px;letter-spacing:.18em;text-shadow:0 2px 16px rgba(0,0,0,.9)}
-    .seal{display:inline-block;margin-top:6px;color:#9e1713;font-size:11px;letter-spacing:0}
-    .menu{width:30px;height:22px;display:grid;align-content:space-between;opacity:.9}
-    .menu span{height:1px;background:#fff;display:block}
-    .copy{position:absolute;left:7vw;bottom:8.5vh;z-index:3;max-width:520px;text-shadow:0 2px 24px rgba(0,0,0,.85)}
-    .kicker{display:flex;align-items:center;gap:14px;font-family:Georgia,serif;letter-spacing:.12em;font-size:16px;color:#f5eee7}
-    .kicker::before{content:"";width:2px;height:58px;background:#b01814;display:block}
-    h1{margin:.65rem 0 0;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:clamp(42px,6vw,74px);font-weight:500;letter-spacing:.16em}
-    .sub{margin-top:14px;font-size:13px;letter-spacing:.18em;color:var(--muted)}
-    .scroll{position:absolute;right:28px;bottom:28px;z-index:3;font-size:10px;letter-spacing:.2em;color:#c9c1b7;writing-mode:vertical-rl}
-    @media(max-width:720px){.topbar{padding-left:20px;padding-right:20px}.brand{font-size:18px}.photo{width:155vw;max-width:none;left:52%;bottom:4vh}.copy{left:7vw;bottom:6.5vh;max-width:86vw}.kicker{font-size:12px;gap:10px}.kicker::before{height:45px}h1{font-size:clamp(36px,11vw,52px);letter-spacing:.12em}.sub{font-size:11px;max-width:78vw;line-height:1.8}.scroll{display:none}.shade{background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,.04) 37%,rgba(0,0,0,.04) 65%,rgba(0,0,0,.82) 100%)}}
-    @media(prefers-reduced-motion:reduce){.smoke{animation:none}}
-  </style>
-</head>
-<body>
-  <main class="hero" aria-label="味一番つばさ ファーストビュー">
-    <img class="photo" src="https://static.wixstatic.com/media/4d13fe_696168f8e6394f7595a9168e02a58cb4~mv2.png/v1/fill/w_1200,h_1000,al_c,q_90/4d13fe_696168f8e6394f7595a9168e02a58cb4~mv2.png" alt="味一番つばさ 究極の味噌ラーメン" />
-    <div class="smoke" aria-hidden="true"></div>
-    <div class="shade" aria-hidden="true"></div>
-    <header class="topbar"><div class="brand">つばさ<span class="seal">味一番</span></div><div class="menu" aria-hidden="true"><span></span><span></span><span></span></div></header>
-    <section class="copy"><div class="kicker">01 — SIGNATURE</div><h1>究極の味噌</h1><div class="sub">SAPPORO · SUSUKINO · SHIN RAMEN YOKOCHO</div></section>
-    <div class="scroll">SCROLL</div>
-  </main>
-  <script>
-    (()=>{const hero=document.querySelector('.hero');const smoke=document.querySelector('.smoke');if(!hero||!smoke||matchMedia('(prefers-reduced-motion: reduce)').matches)return;let tx=0,ty=0,cx=0,cy=0;const move=e=>{const p=e.touches?e.touches[0]:e;tx=(p.clientX/innerWidth-.5)*16;ty=(p.clientY/innerHeight-.5)*10};addEventListener('pointermove',move,{passive:true});addEventListener('touchmove',move,{passive:true});const tick=()=>{cx+=(tx-cx)*.05;cy+=(ty-cy)*.05;smoke.style.translate=`${cx}px ${cy}px`;requestAnimationFrame(tick)};tick()})();
-  </script>
-</body>
-</html>
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050505">
+<meta name="description" content="すすきの・新ラーメン横丁 味一番つばさ。熱い一杯を、深夜まで。"><title>味一番つばさ｜札幌・すすきの</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23b51d16'/%3E%3Ctext x='32' y='47' text-anchor='middle' font-size='46' fill='white'%3E翼%3C/text%3E%3C/svg%3E"><link rel="preload" href="assets/ramen.png" as="image" type="image/png">
+<style>
+:root{--black:#050505;--paper:#f3f0ea;--muted:#aaa49c;--shu:#b51d16}*,*::before,*::after{box-sizing:border-box}html{background:var(--black);color:var(--paper);overflow-x:hidden}body{margin:0;min-width:320px;background:var(--black);font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;overflow-x:clip}button{font:inherit;color:inherit}.fluid{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 52% 42%,#161616 0,#080808 42%,#030303 78%)}.hero{position:relative;z-index:1;min-height:100svh;isolation:isolate;overflow:clip}.hero::before{content:"";position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(2,2,2,.52),transparent 28%,transparent 62%,rgba(3,3,3,.86) 92%,#050505)}.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:32%;z-index:1;pointer-events:none;background:linear-gradient(180deg,transparent,#050505 88%)}
+.topbar{position:absolute;top:0;left:0;right:0;z-index:8;display:flex;align-items:flex-start;justify-content:space-between;padding:calc(20px + env(safe-area-inset-top)) 20px 0}.logo{display:block;width:168px;height:auto;filter:invert(1) grayscale(1) contrast(2);mix-blend-mode:screen;opacity:.98}.seal{position:absolute;left:160px;top:calc(25px + env(safe-area-inset-top));display:grid;width:31px;height:31px;place-items:center;background:var(--shu);color:#fff;font:700 18px/1 serif;transform:rotate(7deg)}.menu{display:grid;width:42px;height:42px;padding:10px 7px;border:1px solid rgba(255,255,255,.22);background:rgba(5,5,5,.18);backdrop-filter:blur(8px);align-content:space-around}.menu i{display:block;height:1px;background:#fff}.eyebrow{position:absolute;left:21px;top:clamp(138px,19svh,190px);z-index:5;display:flex;align-items:center;gap:10px;color:#d9d5ce;font:500 10px/1.2 Georgia,serif;letter-spacing:.22em;text-transform:uppercase}.eyebrow::before{content:"";width:28px;height:1px;background:var(--shu)}
+.ramen-wrap{position:absolute;z-index:-1;left:50%;bottom:7svh;width:min(182vw,760px);transform:translateX(-43%);pointer-events:none}.ramen{display:block;width:100%;height:auto;filter:saturate(.82) contrast(1.08) brightness(.82);transform:rotate(-3deg);transform-origin:50% 75%;user-select:none}.ramen-wrap::before{content:"";position:absolute;z-index:2;left:35%;top:-14%;width:44%;height:40%;background:radial-gradient(ellipse,rgba(236,238,236,.19),rgba(187,192,191,.06) 42%,transparent 70%);filter:blur(15px);mix-blend-mode:screen}.copy{position:absolute;z-index:5;left:21px;right:21px;bottom:11.5svh;text-shadow:0 2px 24px #000,0 1px 4px #000}.copy h1{margin:0;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:clamp(42px,13.4vw,68px);font-weight:500;line-height:.98;letter-spacing:.075em}.copy h1 em{display:block;margin:0 0 10px;color:var(--shu);font:600 12px/1 Georgia,serif;letter-spacing:.24em}.copy p{margin:17px 0 0;color:#c9c4bc;font-size:10px;line-height:1.75;letter-spacing:.18em}.scroll{position:absolute;z-index:5;right:20px;bottom:9.5svh;display:flex;flex-direction:column;align-items:center;gap:9px;font:9px/1 Georgia,serif;letter-spacing:.18em;color:#aaa39a;writing-mode:vertical-rl}.scroll::after{content:"";display:block;width:1px;height:43px;background:linear-gradient(#b51d16,transparent)}.continuation{position:relative;z-index:1;height:24svh;background:linear-gradient(180deg,#050505,rgba(5,5,5,.88));pointer-events:none}
+.fallback-smoke{position:fixed;inset:-15%;z-index:0;opacity:0;pointer-events:none;background:radial-gradient(ellipse at 55% 31%,rgba(235,237,234,.22),transparent 17%),radial-gradient(ellipse at 28% 58%,rgba(164,168,166,.13),transparent 21%),radial-gradient(ellipse at 76% 68%,rgba(133,20,15,.14),transparent 14%);filter:blur(25px)}.no-webgl .fallback-smoke{opacity:1}@media(min-width:700px){.topbar{padding:32px 38px 0}.logo{width:220px}.seal{left:208px;top:39px;width:39px;height:39px}.eyebrow{left:7vw;top:24vh;font-size:11px}.ramen-wrap{left:auto;right:-8vw;bottom:-9vh;width:min(88vw,1180px);transform:none}.ramen{transform:rotate(-4deg)}.copy{left:7vw;bottom:11vh;right:auto}.copy h1{font-size:clamp(58px,7.2vw,108px);letter-spacing:.1em}.copy h1 em{font-size:13px}.copy p{font-size:11px}.scroll{right:38px;bottom:10vh}}@media(min-width:1200px){.ramen-wrap{right:-4vw;width:min(72vw,1220px);bottom:-16vh}.copy{bottom:12vh}}@media(prefers-reduced-motion:reduce){.fluid{display:none}.fallback-smoke{opacity:.72}.scroll::after{background:#5c1714}}
+</style></head><body>
+<canvas class="fluid" id="fluid" aria-hidden="true"></canvas><div class="fallback-smoke" aria-hidden="true"></div>
+<main><section class="hero" aria-label="味一番つばさ ファーストビュー"><header class="topbar"><div class="brand"><img class="logo" src="assets/logo.png" alt="味一番 つばさ"><span class="seal" aria-hidden="true">翼</span></div><button class="menu" type="button" aria-label="メニュー（準備中）" disabled><i></i><i></i></button></header><div class="eyebrow">Sapporo · Susukino</div><div class="ramen-wrap"><img class="ramen" src="assets/ramen.png" alt="味一番つばさの味噌ラーメン" width="1800" height="1207"></div><div class="copy"><h1><em>SIGNATURE 01</em>究極の味噌</h1><p>湯気の向こうに、札幌の夜。<br>新ラーメン横丁、奥の一杯。</p></div><div class="scroll" aria-hidden="true">SCROLL</div></section><div class="continuation" aria-hidden="true"></div></main>
+<script src="fluid.js" defer></script></body></html>
