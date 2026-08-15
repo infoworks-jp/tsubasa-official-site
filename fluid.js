@@ -34,7 +34,15 @@ const fullMenuColumns=[
 </div>`
 ];
 const tm=document.querySelector('.textmenu');if(tm)tm.innerHTML=fullMenuColumns.join('');
-const mp=document.querySelector('.menuPanel');if(mp){const h=mp.querySelector('h3');mp.innerHTML=(h?h.outerHTML:'<h3>味一番つばさ メニュー</h3>')+fullMenuColumns.join('');}
+const mp=document.querySelector('.menuPanel');
+if(mp){
+ const h=mp.querySelector('h3');
+ mp.innerHTML=(h?h.outerHTML:'<h3>味一番つばさ メニュー</h3>')+'<img id="masterMenuImage" class="masterMenuImage" src="assets/menu/menu-ja.svg" alt="味一番つばさ 日本語メニュー">'+fullMenuColumns.join('');
+}
+const menuImages={ja:['assets/menu/menu-ja.svg','味一番つばさ 日本語メニュー'],en:['assets/menu/menu-en.svg','AJIICHIBAN TSUBASA English Menu'],ko:['assets/menu/menu-ko.svg','아지이치방 츠바사 한국어 메뉴'],zh:['assets/menu/menu-zh.svg','味一番翼 中文菜单']};
+function syncMenuImage(lang){const img=document.getElementById('masterMenuImage');const m=menuImages[lang]||menuImages.ja;if(img){img.src=m[0];img.alt=m[1];img.dataset.lang=lang;}}
+document.querySelectorAll('[data-lang]').forEach(btn=>btn.addEventListener('click',()=>syncMenuImage(btn.dataset.lang)));
+syncMenuImage('ja');
 
 if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 const c=document.getElementById('fluidFront');if(!c)return;const x=c.getContext('2d');if(!x)return;
