@@ -1,0 +1,50 @@
+name: One-shot Wix image cleanup
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    if: ${{ !contains(github.event.head_commit.message, '[wix-cleanup]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace Wix image references with official local assets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          repl={
+            "https://static.wixstatic.com/media/4d13fe_a5f4982da57d43689651f316d31a8fff~mv2.jpg":"assets/susukino-intersection.jpg",
+            "https://static.wixstatic.com/media/4d13fe_5878bee977d84432bbdcbdf093f59044~mv2.jpg":"assets/store-interior.jpg",
+            "https://static.wixstatic.com/media/4d13fe_46f3fe212a054c16b53896ddaa602ab9~mv2.png":"assets/logo-vertical.svg",
+            "https://static.wixstatic.com/media/4d13fe_9deea5444ed74f9b82d1af21c5f742a0~mv2.png":"assets/food/chashu.webp",
+            "https://static.wixstatic.com/media/4d13fe_3c4b459bd1934d91907c29ea6c80ec9d~mv2.jpg":"assets/food/butter.webp",
+            "https://static.wixstatic.com/media/4d13fe_f26cd398e13e43e9b7aff6bf513dbe31~mv2.jpg":"assets/food/hero.webp",
+          }
+          missing=[]
+          for old,new in repl.items():
+              if old not in s: missing.append(old)
+              s=s.replace(old,new)
+          p.write_text(s)
+          if missing:
+              print('Already absent:', *missing, sep='\n')
+          PY
+          rm -f .github/workflows/import-store-photo.yml
+          rm -f .github/workflows/cleanup-wix.yml
+      - name: Assert zero Wix references
+        run: |
+          if grep -RIn "static\.wixstatic\.com" . --exclude-dir=.git; then
+            echo "Wix reference remains" >&2
+            exit 1
+          fi
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Remove all Wix image references [wix-cleanup]"
+          git push
