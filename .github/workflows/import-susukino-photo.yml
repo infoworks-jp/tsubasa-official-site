@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download exact official Susukino photo
+      - name: Decode exact official Susukino photo
         run: |
-          curl -L --fail 'https://raw.githubusercontent.com/infoworks-jp/tsubasa-cell.github.io/main/newsite/v2/assets/susukino.jpg' -o assets/susukino-intersection.jpg || exit 1
+          base64 -d assets/susukino-intersection.b64 > assets/susukino-intersection.jpg
       - name: Commit photo
         run: |
           git config user.name 'github-actions[bot]'
