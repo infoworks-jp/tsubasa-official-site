@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
@@ -34,14 +34,14 @@ jobs:
               exit 1
             fi
           fi
-      - name: Forbid unsupported completion claims
+      - name: Gate any STARTED claim
+        run: node ops/claim-gate.mjs started
+      - name: Gate COMPLETE claim when requested by state
+        shell: bash
         run: |
-          node - <<'NODE'
-          const s=require('./ops/execution-state.json');
-          if(s.status==='VISUAL_VERIFIED' && !s.visual_evidence?.passed){
-            console.error('FAIL: VISUAL_VERIFIED without passed evidence'); process.exit(1);
-          }
-          if(['WRITE_STARTED','COMMITTED','DEPLOYED','VISUAL_VERIFIED'].includes(s.status) && !s.write_started_commit){
-            console.error('FAIL: started-or-later without a real write commit recorded'); process.exit(1);
-          }
-          NODE
+          STATUS=$(node -p "require('./ops/execution-state.json').status")
+          if [ "$STATUS" = "VISUAL_VERIFIED" ]; then
+            node ops/claim-gate.mjs complete
+          else
+            echo "Completion claim forbidden while status=$STATUS"
+          fi
