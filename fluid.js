@@ -1,6 +1,42 @@
 (()=>{'use strict';
 const link=document.createElement('link');link.rel='stylesheet';link.href='polish.css?v=8561758';document.head.appendChild(link);
-const officialLogo=document.querySelector('.vlogo');if(officialLogo)officialLogo.src='assets/logo-vertical.svg?v=5075452';
+
+// Hardening: render the official vertical logo as an SVG document instead of an <img>.
+// The approved SVG contains an embedded raster layer; some browsers display that inner layer
+// as a broken-image glyph when the SVG is loaded in secure image mode. <object> renders the
+// same approved asset as an SVG document and preserves the intended appearance.
+const officialLogo=document.querySelector('.vlogo');
+if(officialLogo){
+  officialLogo.style.display='none';
+  const obj=document.createElement('object');
+  obj.className='vlogo vlogoOfficial';
+  obj.type='image/svg+xml';
+  obj.data='assets/logo-vertical.svg?v=5075452';
+  obj.setAttribute('aria-label','味一番つばさ');
+  officialLogo.insertAdjacentElement('afterend',obj);
+}
+
+// Mobile QA hardening: never allow menu rows, media or decorative layers to widen the page.
+const qaStyle=document.createElement('style');
+qaStyle.textContent=`
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+main,footer,.scene,.section,.limited,.menus,.menuPanel,.textmenu,.col,.grid,.triptych,.access{min-width:0;max-width:100%}
+img,object,svg,canvas{max-width:100%}
+.masterMenuImage{display:block;width:100%;max-width:100%;height:auto}
+.row{min-width:0;flex-wrap:wrap}
+.row b{min-width:0;overflow-wrap:anywhere}
+.row span{max-width:100%;white-space:normal;text-align:right;overflow-wrap:anywhere}
+.marquee{width:100%;max-width:100vw}
+@media(max-width:820px){
+  .vlogoOfficial{width:30vw;max-width:145px}
+  .menuPanel,.menus,.section{width:100%;max-width:100%}
+  .menuPanel{overflow:hidden}
+  .textmenu{width:100%}
+  .col{width:100%}
+  footer{max-width:100vw;overflow:hidden}
+}
+`;
+document.head.appendChild(qaStyle);
 
 // Official menu price reconciliation — source: approved Japanese master menu.
 const fullMenuColumns=[
