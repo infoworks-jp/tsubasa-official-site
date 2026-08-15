@@ -1,5 +1,6 @@
 (()=>{'use strict';
 const link=document.createElement('link');link.rel='stylesheet';link.href='polish.css?v=8561758';document.head.appendChild(link);
+const officialLogo=document.querySelector('.vlogo');if(officialLogo)officialLogo.src='assets/logo-vertical.svg?v=5075452';
 if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 const c=document.getElementById('fluidFront');if(!c)return;const x=c.getContext('2d');if(!x)return;
 let W=0,H=0,d=1,particles=[];function resize(){d=Math.min(devicePixelRatio||1,1.5);W=innerWidth;H=innerHeight;c.width=W*d;c.height=H*d;c.style.width=W+'px';c.style.height=H+'px';x.setTransform(d,0,0,d,0,0)}resize();addEventListener('resize',resize,{passive:true});
