@@ -1,7 +1,8 @@
 import { chromium } from 'playwright';
+import sharp from 'sharp';
 import fs from 'node:fs';
 const URL='https://infoworks-jp.github.io/tsubasa-official-site/';
-const EXPECTED=['id="fluidBack"','data-lang="zh"','究極の味噌ラーメン','特製<br>辛味噌ラーメン'];
+const EXPECTED=['@keyframes logoMaterialize','@keyframes neonPulse','assets/susukino-intersection.jpg'];
 const OUT='verification-artifacts';
 fs.mkdirSync(OUT,{recursive:true});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -13,51 +14,65 @@ for(let i=0;i<36;i++){
   }catch{}
   await sleep(5000);
 }
-if(!deployed) throw Error('deploy timeout');
+if(!deployed) throw Error('deploy timeout: new Susukino hero code not public within 3 minutes');
+
 const browser=await chromium.launch({headless:true});
 const errors=[];
-async function canvasSample(page){
-  return await page.evaluate(()=>{
-    const c=document.querySelector('#fluidFront');
-    if(!c) return {pixels:0,sum:0};
-    const ctx=c.getContext('2d');
-    if(!ctx) return {pixels:0,sum:0};
-    const d=ctx.getImageData(0,0,c.width,c.height).data;
-    let pixels=0,sum=0;
-    for(let i=3;i<d.length;i+=16){const a=d[i]; if(a){pixels++;sum+=a;}}
-    return {pixels,sum};
-  });
+async function pixelDiff(a,b){
+  const A=await sharp(a).removeAlpha().raw().toBuffer({resolveWithObject:true});
+  const B=await sharp(b).removeAlpha().raw().toBuffer({resolveWithObject:true});
+  if(A.info.width!==B.info.width||A.info.height!==B.info.height) return {ratio:1,changed:-1};
+  let changed=0,total=A.data.length/3;
+  for(let i=0;i<A.data.length;i+=3){
+    const d=Math.abs(A.data[i]-B.data[i])+Math.abs(A.data[i+1]-B.data[i+1])+Math.abs(A.data[i+2]-B.data[i+2]);
+    if(d>18) changed++;
+  }
+  return {ratio:changed/total,changed,total};
 }
-async function shot(width,height,name){
+async function heroShot(width,height,name){
   const ctx=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,reducedMotion:'no-preference'});
   const page=await ctx.newPage();
   page.on('console',m=>{if(m.type()==='error')errors.push(`${name}: ${m.text()}`)});
   page.on('pageerror',e=>errors.push(`${name}: ${String(e)}`));
   const responses=[]; page.on('response',r=>{if(r.status()>=400)responses.push(`${r.status()} ${r.url()}`)});
-  await page.goto(URL+'?verify='+Date.now(),{waitUntil:'networkidle',timeout:90000});
-  await page.waitForTimeout(1800);
+  await page.goto(URL+'?verify='+Date.now(),{waitUntil:'domcontentloaded',timeout:90000});
+  await page.waitForSelector('.origin .vlogo',{state:'attached',timeout:30000});
+  const start=Date.now();
+  const times=[0,1000,3000,5000];
+  const states=[]; const files=[];
+  for(const t of times){
+    const elapsed=Date.now()-start; if(elapsed<t) await page.waitForTimeout(t-elapsed);
+    const s=await page.evaluate(()=>{
+      const logo=document.querySelector('.origin .vlogo');
+      const bg=document.querySelector('.origin .bg');
+      const before=getComputedStyle(document.querySelector('.origin'),'::before');
+      const ls=getComputedStyle(logo); const bs=getComputedStyle(bg);
+      const anims=logo.getAnimations().map(a=>({currentTime:a.currentTime,playState:a.playState}));
+      return {logoOpacity:parseFloat(ls.opacity),logoFilter:ls.filter,logoTransform:ls.transform,logoAnimations:anims,bgFilter:bs.filter,neonOpacity:parseFloat(before.opacity),scrollY:scrollY};
+    });
+    const file=`${OUT}/${name}-hero-${t/1000}s.png`;
+    await page.screenshot({path:file,fullPage:false});
+    states.push({t,...s}); files.push(file);
+  }
+  const diffs={
+    d0_1:await pixelDiff(files[0],files[1]),
+    d1_3:await pixelDiff(files[1],files[2]),
+    d3_5:await pixelDiff(files[2],files[3])
+  };
   const state=await page.evaluate(()=>({
-    title:document.title,
     overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,
-    back:!!document.querySelector('#fluidBack'),front:!!document.querySelector('#fluidFront'),
-    langs:[...document.querySelectorAll('.langs button')].map(x=>x.textContent.trim()),
     images:[...document.images].map(i=>({src:i.currentSrc||i.src,ok:i.complete&&i.naturalWidth>0}))
   }));
-  await page.screenshot({path:`${OUT}/${name}.png`,fullPage:true});
-  await page.evaluate(()=>window.scrollTo(0,Math.round(innerHeight*1.05)));
-  await page.waitForTimeout(900);
-  const effect1=await canvasSample(page);
-  await page.screenshot({path:`${OUT}/${name}-effect.png`,fullPage:false});
-  await page.waitForTimeout(900);
-  const effect2=await canvasSample(page);
-  const effectActive=effect1.pixels>0&&effect2.pixels>0&&(effect1.sum!==effect2.sum||effect1.pixels!==effect2.pixels);
-  const result={...state,responses,effect1,effect2,effectActive};
-  fs.writeFileSync(`${OUT}/${name}.json`,JSON.stringify(result,null,2));
+  const logoReveal=states[0].logoOpacity<0.12 && states[1].logoOpacity>states[0].logoOpacity && states[3].logoOpacity>states[1].logoOpacity && states[3].logoOpacity>0.85;
+  const heroChanges=diffs.d0_1.ratio>0.0005 && diffs.d1_3.ratio>0.0005 && diffs.d3_5.ratio>0.0001;
+  const neonAnimated=states.some((s,i)=>i&&Math.abs(s.neonOpacity-states[i-1].neonOpacity)>0.01);
+  const result={...state,responses,states,diffs,logoReveal,heroChanges,neonAnimated};
+  fs.writeFileSync(`${OUT}/${name}-hero.json`,JSON.stringify(result,null,2));
   await ctx.close(); return result;
 }
-const desktop=await shot(1440,1000,'desktop-1440');
-const mobile=await shot(390,844,'mobile-390');
-const pass=!desktop.overflow&&!mobile.overflow&&desktop.back&&desktop.front&&mobile.back&&mobile.front&&desktop.langs.length===4&&mobile.langs.length===4&&desktop.images.every(x=>x.ok)&&mobile.images.every(x=>x.ok)&&desktop.effectActive&&mobile.effectActive&&!desktop.responses.length&&!mobile.responses.length&&!errors.length;
+const desktop=await heroShot(1440,1000,'desktop-1440');
+const mobile=await heroShot(390,844,'mobile-390');
+const pass=!desktop.overflow&&!mobile.overflow&&desktop.images.every(x=>x.ok)&&mobile.images.every(x=>x.ok)&&desktop.logoReveal&&mobile.logoReveal&&desktop.heroChanges&&mobile.heroChanges&&desktop.neonAnimated&&mobile.neonAnimated&&!desktop.responses.length&&!mobile.responses.length&&!errors.length;
 fs.writeFileSync(`${OUT}/verification.json`,JSON.stringify({pass,errors,desktop,mobile},null,2));
 await browser.close();
 if(!pass) process.exit(1);
