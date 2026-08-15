@@ -1,0 +1,36 @@
+name: Remove cross-repo image references
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  clean:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace cross-repo asset URLs with local assets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          base='https://raw.githubusercontent.com/infoworks-jp/tubasa-cell.github.io/main/newsite/v2/assets/'
+          names=['limited.webp','kimchi.webp','spicy.webp','negi.webp','shio.webp','fried.webp','gyoza.webp']
+          for n in names:
+              s=s.replace(base+n,'assets/food/'+n)
+          p.write_text(s)
+          PY
+          if grep -q 'raw.githubusercontent.com/infoworks-jp/tubasa-cell.github.io' index.html; then
+            echo 'Cross-repo reference remains' >&2
+            exit 1
+          fi
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Use only local official-site image assets'
+          git push
