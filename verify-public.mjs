@@ -16,11 +16,23 @@ for(let i=0;i<36;i++){
 if(!deployed) throw Error('deploy timeout');
 const browser=await chromium.launch({headless:true});
 const errors=[];
+async function canvasSample(page){
+  return await page.evaluate(()=>{
+    const c=document.querySelector('#fluidFront');
+    if(!c) return {pixels:0,sum:0};
+    const ctx=c.getContext('2d');
+    if(!ctx) return {pixels:0,sum:0};
+    const d=ctx.getImageData(0,0,c.width,c.height).data;
+    let pixels=0,sum=0;
+    for(let i=3;i<d.length;i+=16){const a=d[i]; if(a){pixels++;sum+=a;}}
+    return {pixels,sum};
+  });
+}
 async function shot(width,height,name){
   const ctx=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,reducedMotion:'no-preference'});
   const page=await ctx.newPage();
-  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
-  page.on('pageerror',e=>errors.push(String(e)));
+  page.on('console',m=>{if(m.type()==='error')errors.push(`${name}: ${m.text()}`)});
+  page.on('pageerror',e=>errors.push(`${name}: ${String(e)}`));
   const responses=[]; page.on('response',r=>{if(r.status()>=400)responses.push(`${r.status()} ${r.url()}`)});
   await page.goto(URL+'?verify='+Date.now(),{waitUntil:'networkidle',timeout:90000});
   await page.waitForTimeout(1800);
@@ -32,12 +44,20 @@ async function shot(width,height,name){
     images:[...document.images].map(i=>({src:i.currentSrc||i.src,ok:i.complete&&i.naturalWidth>0}))
   }));
   await page.screenshot({path:`${OUT}/${name}.png`,fullPage:true});
-  fs.writeFileSync(`${OUT}/${name}.json`,JSON.stringify({...state,responses},null,2));
-  await ctx.close(); return {...state,responses};
+  await page.evaluate(()=>window.scrollTo(0,Math.round(innerHeight*1.05)));
+  await page.waitForTimeout(900);
+  const effect1=await canvasSample(page);
+  await page.screenshot({path:`${OUT}/${name}-effect.png`,fullPage:false});
+  await page.waitForTimeout(900);
+  const effect2=await canvasSample(page);
+  const effectActive=effect1.pixels>0&&effect2.pixels>0&&(effect1.sum!==effect2.sum||effect1.pixels!==effect2.pixels);
+  const result={...state,responses,effect1,effect2,effectActive};
+  fs.writeFileSync(`${OUT}/${name}.json`,JSON.stringify(result,null,2));
+  await ctx.close(); return result;
 }
 const desktop=await shot(1440,1000,'desktop-1440');
 const mobile=await shot(390,844,'mobile-390');
-const pass=!desktop.overflow&&!mobile.overflow&&desktop.back&&desktop.front&&mobile.back&&mobile.front&&desktop.langs.length===4&&mobile.langs.length===4&&desktop.images.every(x=>x.ok)&&mobile.images.every(x=>x.ok)&&!desktop.responses.length&&!mobile.responses.length&&!errors.length;
+const pass=!desktop.overflow&&!mobile.overflow&&desktop.back&&desktop.front&&mobile.back&&mobile.front&&desktop.langs.length===4&&mobile.langs.length===4&&desktop.images.every(x=>x.ok)&&mobile.images.every(x=>x.ok)&&desktop.effectActive&&mobile.effectActive&&!desktop.responses.length&&!mobile.responses.length&&!errors.length;
 fs.writeFileSync(`${OUT}/verification.json`,JSON.stringify({pass,errors,desktop,mobile},null,2));
 await browser.close();
 if(!pass) process.exit(1);
