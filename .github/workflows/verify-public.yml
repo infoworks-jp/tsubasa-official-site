@@ -14,12 +14,12 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
-      - name: Install Playwright
+      - name: Install Playwright and image diff tools
         run: |
           npm init -y
-          npm install playwright
+          npm install playwright sharp
           npx playwright install --with-deps chromium
-      - name: Verify deployed animation
+      - name: Verify deployed animation with timed evidence
         run: node verify-public.mjs
       - name: Upload evidence
         if: ${{ !cancelled() }}
