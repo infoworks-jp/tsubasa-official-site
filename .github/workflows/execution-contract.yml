@@ -1,0 +1,47 @@
+name: Execution contract
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - name: Validate execution state
+        run: node ops/validate-execution.mjs
+      - name: Require state update for visual/site changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
+          printf '%s\n' "$CHANGED"
+          if printf '%s\n' "$CHANGED" | grep -Eq '^(index\.html|fluid\.js|assets/|verify-public\.mjs)'; then
+            if ! printf '%s\n' "$CHANGED" | grep -qx 'ops/execution-state.json'; then
+              echo 'FAIL: site/visual change without ops/execution-state.json update'
+              exit 1
+            fi
+          fi
+      - name: Forbid unsupported completion claims
+        run: |
+          node - <<'NODE'
+          const s=require('./ops/execution-state.json');
+          if(s.status==='VISUAL_VERIFIED' && !s.visual_evidence?.passed){
+            console.error('FAIL: VISUAL_VERIFIED without passed evidence'); process.exit(1);
+          }
+          if(['WRITE_STARTED','COMMITTED','DEPLOYED','VISUAL_VERIFIED'].includes(s.status) && !s.write_started_commit){
+            console.error('FAIL: started-or-later without a real write commit recorded'); process.exit(1);
+          }
+          NODE
