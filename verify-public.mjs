@@ -1,8 +1,43 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs';
-import crypto from 'node:crypto';
 const URL='https://infoworks-jp.github.io/tsubasa-official-site/';
-const EXPECTED='steam-photo.js?v=steam-v11-refined',ENGINE='TSUBASA_STEAM_V11',OUT='verification-artifacts';
-fs.mkdirSync(OUT,{recursive:true});const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-for(let i=0;i<60;i++){try{const r=await fetch(URL+'?deploy='+Date.now(),{cache:'no-store'}),h=await r.text();if(r.ok&&h.includes(EXPECTED))break;if(i===59)throw Error('deploy timeout')}catch(e){if(i===59)throw e}await sleep(5000)}
-const browser=await chromium.launch({headless:true});const ctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,reducedMotion:'no-preference'});const page=await ctx.newPage();const ce=[],pe=[];page.on('console',m=>{if(m.type()==='error')ce.push(m.text())});page.on('pageerror',e=>pe.push(String(e)));await page.goto(URL+'?verify='+Date.now(),{waitUntil:'networkidle',timeout:90000});await page.waitForSelector(`canvas.steam-photo[data-engine="${ENGINE}"]`,{timeout:30000});await page.waitForTimeout(1000);const stable=await page.evaluate(async()=>{const i=document.querySelector('.ramen'),a=i.getBoundingClientRect(),t=getComputedStyle(i).transform;await new Promise(r=>setTimeout(r,1600));const b=i.getBoundingClientRect();return Math.abs(a.x-b.x)+Math.abs(a.y-b.y)+Math.abs(a.width-b.width)+Math.abs(a.height-b.height)<.5&&t===getComputedStyle(i).transform});const hashes=[];let visible=true;for(let n=0;n<9;n++){const r=await page.evaluate(()=>{const c=document.querySelector('canvas.steam-photo'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let p=0;for(let i=3;i<d.length;i+=4)if(d[i]>1)p++;return{p,u:c.toDataURL()}});visible&&=r.p>30;hashes.push(crypto.createHash('sha256').update(r.u).digest('hex'));fs.writeFileSync(`${OUT}/steam-${n}.png`,Buffer.from(r.u.split(',')[1],'base64'));await page.screenshot({path:`${OUT}/mobile-${n}.png`});await page.waitForTimeout(650)}const moved=new Set(hashes).size>=7;const desk=await browser.newPage({viewport:{width:1440,height:1000}});await desk.goto(URL+'?desktop='+Date.now(),{waitUntil:'networkidle',timeout:90000});await desk.waitForTimeout(1200);await desk.screenshot({path:`${OUT}/desktop.png`});const overflow=await desk.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth+1);await desk.close();const pass=moved&&visible&&stable&&!overflow&&!ce.length&&!pe.length;fs.writeFileSync(`${OUT}/verification.json`,JSON.stringify({ENGINE,moved,visible,stable,overflow,ce,pe,uniqueFrames:new Set(hashes).size,pass},null,2));await browser.close();if(!pass)process.exit(1);
+const EXPECTED=['id="fluidBack"','data-lang="zh"','究極の味噌ラーメン','特製<br>辛味噌ラーメン'];
+const OUT='verification-artifacts';
+fs.mkdirSync(OUT,{recursive:true});
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let deployed=false;
+for(let i=0;i<36;i++){
+  try{
+    const r=await fetch(URL+'?deploy='+Date.now(),{cache:'no-store'}); const h=await r.text();
+    if(r.ok&&EXPECTED.every(x=>h.includes(x))){deployed=true;break;}
+  }catch{}
+  await sleep(5000);
+}
+if(!deployed) throw Error('deploy timeout');
+const browser=await chromium.launch({headless:true});
+const errors=[];
+async function shot(width,height,name){
+  const ctx=await browser.newContext({viewport:{width,height},deviceScaleFactor:1,reducedMotion:'no-preference'});
+  const page=await ctx.newPage();
+  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+  page.on('pageerror',e=>errors.push(String(e)));
+  const responses=[]; page.on('response',r=>{if(r.status()>=400)responses.push(`${r.status()} ${r.url()}`)});
+  await page.goto(URL+'?verify='+Date.now(),{waitUntil:'networkidle',timeout:90000});
+  await page.waitForTimeout(1800);
+  const state=await page.evaluate(()=>({
+    title:document.title,
+    overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,
+    back:!!document.querySelector('#fluidBack'),front:!!document.querySelector('#fluidFront'),
+    langs:[...document.querySelectorAll('.langs button')].map(x=>x.textContent.trim()),
+    images:[...document.images].map(i=>({src:i.currentSrc||i.src,ok:i.complete&&i.naturalWidth>0}))
+  }));
+  await page.screenshot({path:`${OUT}/${name}.png`,fullPage:true});
+  fs.writeFileSync(`${OUT}/${name}.json`,JSON.stringify({...state,responses},null,2));
+  await ctx.close(); return {...state,responses};
+}
+const desktop=await shot(1440,1000,'desktop-1440');
+const mobile=await shot(390,844,'mobile-390');
+const pass=!desktop.overflow&&!mobile.overflow&&desktop.back&&desktop.front&&mobile.back&&mobile.front&&desktop.langs.length===4&&mobile.langs.length===4&&desktop.images.every(x=>x.ok)&&mobile.images.every(x=>x.ok)&&!desktop.responses.length&&!mobile.responses.length&&!errors.length;
+fs.writeFileSync(`${OUT}/verification.json`,JSON.stringify({pass,errors,desktop,mobile},null,2));
+await browser.close();
+if(!pass) process.exit(1);
