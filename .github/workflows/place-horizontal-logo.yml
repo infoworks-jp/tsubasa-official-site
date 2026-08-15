@@ -1,0 +1,32 @@
+name: Place official horizontal logo
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  place-logo:
+    if: github.event.head_commit.message != 'Apply official horizontal logo'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - name: Insert official horizontal logo
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('footer{padding:38px 6vw;border-top:1px solid #281616;background:#030303;color:#777;font-size:10px;display:flex;justify-content:space-between}', 'footer{padding:38px 6vw;border-top:1px solid #281616;background:#030303;color:#777;font-size:10px;display:flex;justify-content:space-between;align-items:center}.footerLogo{width:min(260px,42vw);height:auto;display:block;filter:drop-shadow(0 0 10px rgba(255,255,255,.08))}')
+          s=s.replace('<footer><div>味一番つばさ / TSUBASA RAMEN</div><div>© TSUBASA RAMEN</div></footer>', '<footer><div><img class="footerLogo" src="assets/logo-horizontal.jpg" alt="味一番つばさ"></div><div>© TSUBASA RAMEN</div></footer>')
+          p.write_text(s)
+          PY
+      - name: Commit change
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Apply official horizontal logo'
+          git push
