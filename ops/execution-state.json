@@ -1,0 +1,16 @@
+{
+  "task_id": "susukino-top-20260816",
+  "request": "Replace the Susukino TOP image with the user-provided image and verify the public result.",
+  "status": "COMMITTED",
+  "allowed_statuses": ["REQUESTED", "WRITE_STARTED", "COMMITTED", "DEPLOYED", "VISUAL_VERIFIED", "STOPPED_INCOMPLETE"],
+  "write_started_commit": "a724c0bad37ad52a484b999aa51323abe0b39746",
+  "implementation_commit": "a724c0bad37ad52a484b999aa51323abe0b39746",
+  "deployed_url": "https://infoworks-jp.github.io/tsubasa-official-site/",
+  "visual_evidence": {
+    "passed": false,
+    "qa_run_id": null,
+    "desktop": {"s0": null, "s1": null, "s3": null, "s5": null},
+    "mobile": {"s0": null, "s1": null, "s3": null, "s5": null}
+  },
+  "completion_rule": "Never claim completion unless status is VISUAL_VERIFIED and visual_evidence.passed is true. Never claim started unless write_started_commit is a real repository commit."
+}
