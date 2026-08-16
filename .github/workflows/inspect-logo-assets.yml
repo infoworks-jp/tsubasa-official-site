@@ -1,0 +1,56 @@
+name: Inspect logo assets
+
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-logo-assets.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+      - name: Inspect logo files
+        shell: bash
+        run: |
+          set -euo pipefail
+          file assets/logo.png assets/logo-horizontal.jpg assets/logo-vertical.svg
+          wc -c assets/logo.png assets/logo-horizontal.jpg assets/logo-vertical.svg
+          python - <<'PY'
+          from pathlib import Path
+          import base64,re,struct,zlib
+          s=Path('assets/logo-vertical.svg').read_text()
+          m=re.search(r'base64,([^\"\']+)',s)
+          if not m:
+              print('SVG_EMBEDDED_PNG=missing')
+              raise SystemExit(0)
+          raw=base64.b64decode(m.group(1),validate=False)
+          print('EMBEDDED_BYTES',len(raw),'PNG_SIGNATURE',raw[:8]==b'\x89PNG\r\n\x1a\n','IEND_AT',raw.find(b'IEND'))
+          pos=8; ok=raw[:8]==b'\x89PNG\r\n\x1a\n'; chunks=[]
+          try:
+              while ok and pos+12<=len(raw):
+                  n=struct.unpack('>I',raw[pos:pos+4])[0]; typ=raw[pos+4:pos+8]; end=pos+12+n
+                  if end>len(raw): ok=False; break
+                  chunks.append(typ.decode('ascii','replace'))
+                  data=raw[pos+8:pos+8+n]; stored=struct.unpack('>I',raw[pos+8+n:pos+12+n])[0]
+                  calc=zlib.crc32(typ); calc=zlib.crc32(data,calc)&0xffffffff
+                  if stored!=calc: ok=False; print('CRC_FAIL',typ,pos,n); break
+                  pos=end
+                  if typ==b'IEND': break
+              print('PNG_STRUCT_OK',ok and chunks and chunks[-1]=='IEND','CHUNKS',chunks[:20],'END_POS',pos)
+          except Exception as e: print('PNG_PARSE_ERROR',repr(e))
+          PY
+      - name: Upload logo candidates
+        uses: actions/upload-artifact@v4
+        with:
+          name: logo-asset-diagnostics
+          path: |
+            assets/logo.png
+            assets/logo-horizontal.jpg
+            assets/logo-vertical.svg
+          if-no-files-found: error
+          retention-days: 2
