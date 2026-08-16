@@ -1,15 +1,15 @@
 (()=>{'use strict';
-const link=document.createElement('link');link.rel='stylesheet';link.href='polish.css?v=20260816-exact-hero';document.head.appendChild(link);
+const link=document.createElement('link');link.rel='stylesheet';link.href='polish.css?v=20260816-logo-render-fix';document.head.appendChild(link);
 
-// Hero uses exact approved repository assets. Avoid replaced <img> content entirely.
+// Use the valid approved repository logo raster. The previous logo-vertical.svg was created from truncated base64 and renders as a broken-image placeholder.
 const oldLogo=document.querySelector('.vlogo');if(oldLogo)oldLogo.remove();
 const origin=document.querySelector('.origin');if(origin){const heroLogo=document.createElement('div');heroLogo.className='heroLogo';heroLogo.setAttribute('role','img');heroLogo.setAttribute('aria-label','味一番つばさ');origin.appendChild(heroLogo);}
 const heroFix=document.createElement('style');heroFix.textContent=`
 .origin .bg{background-image:url('assets/susukino-top-20260816.png')!important;background-position:center 58%!important;background-size:cover!important;filter:brightness(.88) contrast(1.10) saturate(1.10)!important}
 .origin .shade{background:linear-gradient(90deg,rgba(0,0,0,.18),rgba(0,0,0,.01) 58%,rgba(0,0,0,.28)),linear-gradient(0deg,#030303 0,transparent 25%)!important}
-.heroLogo{position:absolute;z-index:6;left:28%;top:8vh;width:min(250px,17vw);aspect-ratio:360/729;background:url('assets/logo-vertical.svg') center/contain no-repeat;opacity:0;transform:translateX(-50%) scale(.94);filter:blur(8px) brightness(1.7) drop-shadow(0 0 28px rgba(255,0,105,.7));animation:logoMaterialize 3.3s cubic-bezier(.2,.72,.18,1) .55s forwards;will-change:opacity,filter,transform}
+.heroLogo{position:absolute;z-index:6;left:19%;top:9vh;width:min(360px,25vw);aspect-ratio:343/160;background:url('assets/logo.png') center/contain no-repeat;opacity:0;transform:translateX(-50%) translateY(18px) scale(.94);filter:blur(8px) brightness(1.7) drop-shadow(0 0 28px rgba(255,0,105,.7));animation:logoMaterialize 3.3s cubic-bezier(.2,.72,.18,1) .55s forwards;will-change:opacity,filter,transform}
 .store .bg{background-image:url('assets/store-interior.png')!important;background-position:center!important;background-size:cover!important}
-@media(max-width:820px){.origin .bg{background-position:52% center!important}.heroLogo{left:24%;top:7vh;width:25vw;max-width:108px}}
+@media(max-width:820px){.origin .bg{background-position:52% center!important}.heroLogo{left:23%;top:10vh;width:42vw;max-width:165px}}
 @media(prefers-reduced-motion:reduce){.heroLogo{animation:none!important;opacity:1;transform:translateX(-50%);filter:drop-shadow(0 0 12px rgba(255,0,105,.55))}}
 html,body{width:100%;max-width:100%;overflow-x:hidden}main,footer,.scene,.section,.limited,.menus,.menuPanel,.textmenu,.col,.grid,.triptych,.access{min-width:0;max-width:100%}img,object,svg,canvas{max-width:100%}.masterMenuImage{display:block;width:100%;max-width:100%;height:auto}.row{min-width:0;flex-wrap:wrap}.row b{min-width:0;overflow-wrap:anywhere}.row span{max-width:100%;white-space:normal;text-align:right;overflow-wrap:anywhere}.marquee{width:100%;max-width:100vw}@media(max-width:820px){.menuPanel,.menus,.section{width:100%;max-width:100%}.menuPanel{overflow:hidden}.textmenu,.col{width:100%}footer{max-width:100vw;overflow:hidden}}
 `;document.head.appendChild(heroFix);
