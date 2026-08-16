@@ -1,16 +1,33 @@
 {
-  "task_id": "visual-repair-20260816",
-  "request": "Repair the public hero so the approved Susukino photo and vertical logo render correctly, then verify desktop 1440px and mobile 390px at 0/1/3/5 seconds before completion.",
+  "task_id": "official-image-replacement-20260816",
+  "request": "Replace hero and store interior with the exact approved user-supplied originals, then verify public desktop and mobile output.",
   "status": "COMMITTED",
-  "allowed_statuses": ["REQUESTED", "WRITE_STARTED", "COMMITTED", "DEPLOYED", "VISUAL_VERIFIED", "STOPPED_INCOMPLETE"],
+  "allowed_statuses": [
+    "REQUESTED",
+    "WRITE_STARTED",
+    "COMMITTED",
+    "DEPLOYED",
+    "VISUAL_VERIFIED",
+    "STOPPED_INCOMPLETE"
+  ],
   "write_started_commit": "83017b5c49b85c1b656b5899ff68c1eea325e567",
   "implementation_commit": "83017b5c49b85c1b656b5899ff68c1eea325e567",
   "deployed_url": "https://infoworks-jp.github.io/tsubasa-official-site/",
   "visual_evidence": {
     "passed": false,
     "qa_run_id": null,
-    "desktop": {"s0": null, "s1": null, "s3": null, "s5": null},
-    "mobile": {"s0": null, "s1": null, "s3": null, "s5": null}
+    "desktop": {
+      "s0": null,
+      "s1": null,
+      "s3": null,
+      "s5": null
+    },
+    "mobile": {
+      "s0": null,
+      "s1": null,
+      "s3": null,
+      "s5": null
+    }
   },
   "completion_rule": "Never claim completion unless status is VISUAL_VERIFIED and visual_evidence.passed is true. Never claim started unless write_started_commit is a real repository commit."
 }
