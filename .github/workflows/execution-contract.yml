@@ -5,9 +5,14 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+concurrency:
+  group: execution-contract-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   enforce:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v5
         with:
@@ -23,25 +28,21 @@ jobs:
           set -euo pipefail
           BEFORE="${{ github.event.before }}"
           AFTER="${{ github.sha }}"
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            exit 0
-          fi
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then exit 0; fi
           CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
           printf '%s\n' "$CHANGED"
           if printf '%s\n' "$CHANGED" | grep -Eq '^(index\.html|fluid\.js|assets/|verify-public\.mjs)'; then
-            if ! printf '%s\n' "$CHANGED" | grep -qx 'ops/execution-state.json'; then
-              echo 'FAIL: site/visual change without ops/execution-state.json update'
-              exit 1
-            fi
+            printf '%s\n' "$CHANGED" | grep -qx 'ops/execution-state.json' || { echo 'FAIL: site/visual change without execution-state update'; exit 1; }
           fi
-      - name: Gate any STARTED claim
+      - name: Gate STARTED claim
         run: node ops/claim-gate.mjs started
-      - name: Gate COMPLETE claim when requested by state
+      - name: Gate COMPLETE claim
         shell: bash
         run: |
           STATUS=$(node -p "require('./ops/execution-state.json').status")
           if [ "$STATUS" = "VISUAL_VERIFIED" ]; then
             node ops/claim-gate.mjs complete
+            node ops/acceptance-gate.mjs
           else
-            echo "Completion claim forbidden while status=$STATUS"
+            echo "Completion forbidden while status=$STATUS"
           fi
