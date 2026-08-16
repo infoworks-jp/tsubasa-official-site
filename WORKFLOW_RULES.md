@@ -19,6 +19,14 @@ A task is COMPLETE only at VISUAL_VERIFIED.
 9. Intermediate technical failures are operator-internal. User-facing status should normally be sent only after VISUAL_VERIFIED, and should state the problem encountered only as completed history: what failed, how it was repaired, and that final verification passed.
 10. Ask the user only when completion genuinely requires information, credentials, approval, or a source asset that cannot be recovered from available context/tools.
 11. Never hand an internal blocker back to the user as an unexplained 'stuck' status when another available execution route can be attempted.
+12. Never use ambiguous future/progressive wording such as 'します', '進めます', 'やっています' unless the execution state is explicitly stated in the same sentence.
+13. User-facing status wording must use one of these exact meanings:
+   - NOT_STARTED: '未着手です。まだ実作業は開始していません。'
+   - IN_PROGRESS: '作業進行中です。実作業は開始済みで、まだ完了していません。'
+   - COMPLETE: '完了しました。公開反映と必要な検品まで完了しています。'
+   - BLOCKED_EXTERNAL: only when every available recovery route is exhausted and an external dependency is genuinely required.
+14. If the task is IN_PROGRESS, state the concrete current operation, not a vague promise. Example: 'TOP画像と店内写真の換装処理は未完了で、現在バイナリ格納経路の修復作業を進行中です。'
+15. Do not end a reply after discussing policy/process changes when there is an active unfinished user task. Explicitly state whether that task is IN_PROGRESS or NOT_STARTED and continue available execution steps in the same turn.
 
 ## Image replacement gate
 For a requested image replacement, completion requires all of:
