@@ -4,13 +4,24 @@
   "status": "COMMITTED",
   "allowed_statuses": ["REQUESTED", "WRITE_STARTED", "COMMITTED", "DEPLOYED", "VISUAL_VERIFIED", "STOPPED_INCOMPLETE"],
   "write_started_commit": "afeea38b958cafc58df0a91e6e24c4dc57635a78",
-  "implementation_commit": "fd9c42644e53c42dd5862593b39127d388d11ddc",
+  "implementation_commit": "c9abd28fdc3abd978e6f5f425c6593225cea4110",
   "deployed_url": "https://infoworks-jp.github.io/tsubasa-official-site/",
   "visual_evidence": {
     "passed": false,
-    "qa_run_id": null,
-    "desktop": {"s0": null, "s1": null, "s3": null, "s5": null},
-    "mobile": {"s0": null, "s1": null, "s3": null, "s5": null}
+    "qa_run_id": 31924346894,
+    "desktop": {
+      "s0": "desktop-1440-hero-0s.png",
+      "s1": "desktop-1440-hero-1s.png",
+      "s3": "desktop-1440-hero-3s.png",
+      "s5": "desktop-1440-hero-5s.png"
+    },
+    "mobile": {
+      "s0": "mobile-390-hero-0s.png",
+      "s1": "mobile-390-hero-1s.png",
+      "s3": "mobile-390-hero-3s.png",
+      "s5": "mobile-390-hero-5s.png"
+    },
+    "manual_review": "Automated QA passes after removing the broken-image placeholder, but manual review does not approve completion: the repository's valid fallback logo.png renders as a horizontal white logo card, while the intended vertical approved logo asset is unavailable because logo-vertical.svg contains truncated base64. Keep completion false until the exact intended logo is restored and manually verified."
   },
   "completion_rule": "Never claim completion unless status is VISUAL_VERIFIED and visual_evidence.passed is true. Never claim started unless write_started_commit is a real repository commit."
 }
