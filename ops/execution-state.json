@@ -1,10 +1,10 @@
 {
-  "task_id": "susukino-top-20260816",
-  "request": "Replace the Susukino TOP image with the user-provided image and verify the public result.",
+  "task_id": "visual-repair-20260816",
+  "request": "Repair the public hero so the approved Susukino photo and vertical logo render correctly, then verify desktop 1440px and mobile 390px at 0/1/3/5 seconds before completion.",
   "status": "COMMITTED",
   "allowed_statuses": ["REQUESTED", "WRITE_STARTED", "COMMITTED", "DEPLOYED", "VISUAL_VERIFIED", "STOPPED_INCOMPLETE"],
-  "write_started_commit": "a724c0bad37ad52a484b999aa51323abe0b39746",
-  "implementation_commit": "a724c0bad37ad52a484b999aa51323abe0b39746",
+  "write_started_commit": "83017b5c49b85c1b656b5899ff68c1eea325e567",
+  "implementation_commit": "83017b5c49b85c1b656b5899ff68c1eea325e567",
   "deployed_url": "https://infoworks-jp.github.io/tsubasa-official-site/",
   "visual_evidence": {
     "passed": false,

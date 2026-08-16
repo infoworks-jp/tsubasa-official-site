@@ -31,7 +31,7 @@ jobs:
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then exit 0; fi
           CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
           printf '%s\n' "$CHANGED"
-          if printf '%s\n' "$CHANGED" | grep -Eq '^(index\.html|fluid\.js|assets/|verify-public\.mjs)'; then
+          if printf '%s\n' "$CHANGED" | grep -Eq '^(index\.html|fluid\.js|polish\.css|assets/|verify-public\.mjs|\.github/workflows/verify-public\.yml)'; then
             printf '%s\n' "$CHANGED" | grep -qx 'ops/execution-state.json' || { echo 'FAIL: site/visual change without execution-state update'; exit 1; }
           fi
       - name: Gate STARTED claim
