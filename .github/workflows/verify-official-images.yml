@@ -1,0 +1,71 @@
+name: Verify exact public hero and interior images
+
+on:
+  push:
+    paths:
+      - '.github/workflows/verify-official-images.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Wait for exact public asset bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://infoworks-jp.github.io/tsubasa-official-site/assets'
+          ok=0
+          for i in $(seq 1 12); do
+            curl -fLsS "$BASE/susukino-top-20260816.png?x=$RANDOM" -o /tmp/top.png || true
+            curl -fLsS "$BASE/store-interior.png?x=$RANDOM" -o /tmp/interior.png || true
+            T=$(sha256sum /tmp/top.png 2>/dev/null | awk '{print $1}' || true)
+            I=$(sha256sum /tmp/interior.png 2>/dev/null | awk '{print $1}' || true)
+            if [ "$T" = '22039093010044c8da71a6b52e25932b0a1be3c9fd00f318224befb02204ad8a' ] && [ "$I" = '7dc17baca082b8fd259b99503fa7241cc4f265f36f60e8eddbf17d1576c71ce9' ]; then ok=1; break; fi
+            sleep 5
+          done
+          test "$ok" = 1
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - name: Capture desktop and mobile proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm init -y >/dev/null 2>&1
+          npm install playwright >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null 2>&1
+          mkdir -p proof
+          cat > /tmp/proof.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const url='https://infoworks-jp.github.io/tsubasa-official-site/?proof='+Date.now();
+          const browser=await chromium.launch({headless:true});
+          for (const [name,width,height] of [['desktop',1440,1000],['mobile',390,844]]) {
+            const page=await browser.newPage({viewport:{width,height}});
+            await page.goto(url,{waitUntil:'networkidle',timeout:30000});
+            await page.screenshot({path:`proof/${name}-hero.png`,fullPage:false});
+            await page.locator('.store').scrollIntoViewIfNeeded();
+            await page.waitForTimeout(500);
+            await page.locator('.store').screenshot({path:`proof/${name}-interior.png`});
+            const data=await page.evaluate(()=>({
+              hero:getComputedStyle(document.querySelector('.origin .bg')).backgroundImage,
+              interior:getComputedStyle(document.querySelector('.store .bg')).backgroundImage,
+              heroReady:!!document.querySelector('.origin .bg'),
+              interiorReady:!!document.querySelector('.store .bg')
+            }));
+            console.log(name,JSON.stringify(data));
+            if(!data.hero.includes('susukino-top-20260816.png') || !data.interior.includes('store-interior.png')) throw new Error('wrong public image reference');
+            await page.close();
+          }
+          await browser.close();
+          JS
+          node /tmp/proof.mjs
+      - uses: actions/upload-artifact@v7
+        with:
+          name: official-image-proof
+          path: proof/
+          retention-days: 30
