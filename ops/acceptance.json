@@ -1,0 +1,23 @@
+{
+  "policy_version": 1,
+  "completion_requires_all": true,
+  "gates": {
+    "write_proof": false,
+    "approved_asset_identity": false,
+    "repo_asset_health": false,
+    "public_asset_identity": false,
+    "no_external_wix_images": false,
+    "no_cross_repo_images": false,
+    "desktop_1440_visual": false,
+    "mobile_390_visual": false,
+    "logo_timed_reveal": false,
+    "neon_timed_change": false,
+    "pointer_fluid_response": false,
+    "four_language_mapping": false,
+    "product_image_mapping": false,
+    "price_master_match": false,
+    "links_functional": false,
+    "artifact_complete": false
+  },
+  "rule": "Any false gate means INCOMPLETE. Workflow success alone is never completion."
+}
