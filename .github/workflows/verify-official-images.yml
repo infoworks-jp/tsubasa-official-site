@@ -14,18 +14,23 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
-      - name: Wait for exact public asset bytes
+      - name: Wait for exact public assets and deployed HTML
         shell: bash
         run: |
           set -euo pipefail
-          BASE='https://infoworks-jp.github.io/tsubasa-official-site/assets'
+          ROOT='https://infoworks-jp.github.io/tsubasa-official-site'
+          BASE="$ROOT/assets"
           ok=0
-          for i in $(seq 1 12); do
+          for i in $(seq 1 18); do
             curl -fLsS "$BASE/susukino-top-20260816.png?x=$RANDOM" -o /tmp/top.png || true
             curl -fLsS "$BASE/store-interior.png?x=$RANDOM" -o /tmp/interior.png || true
+            curl -fLsS "$ROOT/?x=$RANDOM" -o /tmp/index.html || true
             T=$(sha256sum /tmp/top.png 2>/dev/null | awk '{print $1}' || true)
             I=$(sha256sum /tmp/interior.png 2>/dev/null | awk '{print $1}' || true)
-            if [ "$T" = '22039093010044c8da71a6b52e25932b0a1be3c9fd00f318224befb02204ad8a' ] && [ "$I" = '7dc17baca082b8fd259b99503fa7241cc4f265f36f60e8eddbf17d1576c71ce9' ]; then ok=1; break; fi
+            if [ "$T" = '22039093010044c8da71a6b52e25932b0a1be3c9fd00f318224befb02204ad8a' ] \
+              && [ "$I" = '7dc17baca082b8fd259b99503fa7241cc4f265f36f60e8eddbf17d1576c71ce9' ] \
+              && grep -q 'assets/susukino-top-20260816.png' /tmp/index.html \
+              && grep -q 'assets/store-interior.png' /tmp/index.html; then ok=1; break; fi
             sleep 5
           done
           test "$ok" = 1
@@ -53,9 +58,7 @@ jobs:
             await page.locator('.store').screenshot({path:`proof/${name}-interior.png`});
             const data=await page.evaluate(()=>({
               hero:getComputedStyle(document.querySelector('.origin .bg')).backgroundImage,
-              interior:getComputedStyle(document.querySelector('.store .bg')).backgroundImage,
-              heroReady:!!document.querySelector('.origin .bg'),
-              interiorReady:!!document.querySelector('.store .bg')
+              interior:getComputedStyle(document.querySelector('.store .bg')).backgroundImage
             }));
             console.log(name,JSON.stringify(data));
             if(!data.hero.includes('susukino-top-20260816.png') || !data.interior.includes('store-interior.png')) throw new Error('wrong public image reference');
