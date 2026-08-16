@@ -40,7 +40,7 @@ jobs:
           npm install playwright >/dev/null 2>&1
           npx playwright install --with-deps chromium >/dev/null 2>&1
           mkdir -p proof
-          cat > /tmp/proof.mjs <<'JS'
+          cat > proof.mjs <<'JS'
           import { chromium } from 'playwright';
           const url='https://infoworks-jp.github.io/tsubasa-official-site/?proof='+Date.now();
           const browser=await chromium.launch({headless:true});
@@ -63,7 +63,7 @@ jobs:
           }
           await browser.close();
           JS
-          node /tmp/proof.mjs
+          node proof.mjs
       - uses: actions/upload-artifact@v7
         with:
           name: official-image-proof
